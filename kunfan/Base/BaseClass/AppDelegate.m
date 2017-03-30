@@ -1,0 +1,93 @@
+//
+//  AppDelegate.m
+//  kunfan
+//
+//  Created by 坤凡 on 2017/2/25.
+//  Copyright © 2017年 坤凡. All rights reserved.
+//
+
+#import "AppDelegate.h"
+#import "UIWindow+Ext.h"
+#import <Bugly/Bugly.h>
+@interface AppDelegate ()
+
+@end
+
+@implementation AppDelegate
+
+
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    
+    // bugly初始化
+    BuglyConfig *buglyConfig = [[BuglyConfig alloc]init];
+    buglyConfig.blockMonitorEnable = YES;
+    buglyConfig.blockMonitorTimeout = 2.0f;
+    buglyConfig.unexpectedTerminatingDetectionEnable = YES;
+    buglyConfig.reportLogLevel = BuglyLogLevelWarn;
+    [Bugly startWithAppId:kMoBuglyAppId config:buglyConfig];
+    
+    
+    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    self.window.backgroundColor = [UIColor whiteColor];
+    
+    [_window makeKeyAndVisible];
+    [_window chooseRootViewController];
+    
+    HBLog(@"UUID:%@",[Util createUUID]);
+    
+    [self  getUniqueDeviceIdentifierAsString];
+
+    return YES;
+}
+
+-(NSString *)getUniqueDeviceIdentifierAsString
+{
+    NSString *appName=[[[NSBundle mainBundle] infoDictionary] objectForKey:(NSString*)kCFBundleNameKey];
+    
+    NSString *strApplicationUUID =  [SAMKeychain passwordForService:appName account:@"incoding"];
+    if (strApplicationUUID == nil)
+    {
+        strApplicationUUID  = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+        
+        NSError *error = nil;
+        SAMKeychainQuery *query = [[SAMKeychainQuery alloc] init];
+        query.service = appName;
+        query.account = @"incoding";
+        query.password = strApplicationUUID;
+        query.synchronizationMode = SAMKeychainQuerySynchronizationModeNo;
+        [query save:&error];
+        
+    }
+    
+    return strApplicationUUID;
+}
+
+
+- (void)applicationWillResignActive:(UIApplication *)application {
+    // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
+    // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
+}
+
+
+- (void)applicationDidEnterBackground:(UIApplication *)application {
+    // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
+    // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+}
+
+
+- (void)applicationWillEnterForeground:(UIApplication *)application {
+    // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
+}
+
+
+- (void)applicationDidBecomeActive:(UIApplication *)application {
+    // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+}
+
+
+- (void)applicationWillTerminate:(UIApplication *)application {
+    // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+}
+
+
+@end
